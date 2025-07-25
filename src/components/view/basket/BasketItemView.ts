@@ -11,6 +11,7 @@ export class BasketItemView extends View<
 	protected titleEl: HTMLSpanElement;
 	protected priceEl: HTMLSpanElement;
 	protected deleteButton: HTMLButtonElement;
+	protected indexEl: HTMLSpanElement;
 
 	init() {
 		this.titleEl = this.ensureElement<HTMLSpanElement>('.card__title');
@@ -18,9 +19,12 @@ export class BasketItemView extends View<
 		this.deleteButton = this.ensureElement<HTMLButtonElement>(
 			'.basket__item-delete'
 		);
+		this.indexEl = this.ensureElement<HTMLSpanElement>('.basket__item-index');
 
 		this.deleteButton.addEventListener('click', () => {
-			this.settings.events.emit('basket:remove', { id: this.id });
+			this.settings.events.emit('basket:change', {
+				id: this.element.dataset.id,
+			});
 		});
 	}
 
@@ -28,25 +32,12 @@ export class BasketItemView extends View<
 		this.element.dataset.id = value;
 	}
 
-	get id(): string {
-		return this.element.dataset.id || '';
-	}
-
-	get title() {
-		return this.titleEl.textContent || '';
-	}
-
 	set title(value: string) {
 		this.titleEl.textContent = value;
 	}
 
-	get price(): number | null {
-		const price = Number(this.element.dataset.price);
-		if (Number.isNaN(price)) {
-			return null;
-		}
-
-		return price;
+	set index(value: number) {
+		this.indexEl.textContent = String(value + 1);
 	}
 
 	set price(value: number | null) {

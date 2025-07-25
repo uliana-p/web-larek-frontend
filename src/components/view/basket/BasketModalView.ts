@@ -1,4 +1,7 @@
-import { IBasketViewData, IBasketViewSettings } from '../../../types/components/view/basket/BasketView';
+import {
+	IBasketViewData,
+	IBasketViewSettings,
+} from '../../../types/components/view/basket/BasketView';
 import { IProduct } from '../../../types';
 import { settings } from '../../../utils/constants';
 import { cloneTemplate } from '../../../utils/utils';
@@ -9,16 +12,22 @@ export class BasketModalView extends View<
 	IBasketViewData,
 	IBasketViewSettings
 > {
-	declare basketList: HTMLElement;
-	declare button: HTMLButtonElement;
+	protected basketList: HTMLElement;
+	protected button: HTMLButtonElement;
+	protected priceEl: HTMLSpanElement;
 
 	init() {
 		this.basketList = this.ensureElement('.basket__list');
 		this.button = this.ensureElement('.basket__button');
+		this.priceEl = this.ensureElement('.basket__price');
 
 		this.button.addEventListener('click', () => {
 			this.settings.events.emit('order:payment');
 		});
+	}
+
+	getModalContent() {
+		return this.element;
 	}
 
 	set products(products: IProduct[]) {
@@ -29,12 +38,12 @@ export class BasketModalView extends View<
 		}
 
 		this.basketList.innerHTML = '';
-		products.forEach((product) => {
+		products.forEach((product, index) => {
 			const card = new BasketItemView(
 				cloneTemplate(settings.TEMPLATES.CARD_BASKET),
 				{ events: this.settings.events }
 			);
-			this.basketList.appendChild(card.render(product));
+			this.basketList.appendChild(card.render({ ...product, index }));
 		});
 	}
 
@@ -42,7 +51,7 @@ export class BasketModalView extends View<
 		this.button.disabled = value;
 	}
 
-	get isDisabled() {
-		return this.button.disabled;
+	set price(value: number) {
+		this.priceEl.textContent = `${value} синапсов`;
 	}
 }

@@ -8,8 +8,8 @@ export class OrderPaymentModalView extends OrderFromView<
 	IOrderPaymentViewData,
 	IOrderPaymentViewSettings
 > {
-	private paymentButtons: NodeListOf<HTMLButtonElement>;
-	private addressInput: HTMLInputElement;
+	protected paymentButtons: NodeListOf<HTMLButtonElement>;
+	protected addressInput: HTMLInputElement;
 
 	init() {
 		super.init();
@@ -23,16 +23,15 @@ export class OrderPaymentModalView extends OrderFromView<
 
 		this.paymentButtons.forEach((btn) => {
 			btn.addEventListener('click', () => {
-				this.payment = btn.name as IOrderPaymentViewData['payment'];
 				this.settings.events.emit('order:payment-change', {
-					payment: this.payment,
+					payment: btn.name as IOrderPaymentViewData['payment'],
 				});
 			});
 		});
 
-		this.addressInput.addEventListener('input', () => {
+		this.addressInput.addEventListener('input', (e) => {
 			this.settings.events.emit('order:address-change', {
-				address: this.address,
+				address: (e.target as HTMLInputElement).value,
 			});
 		});
 	}
@@ -53,15 +52,7 @@ export class OrderPaymentModalView extends OrderFromView<
 		this.element.dataset.payment = value;
 	}
 
-	get payment(): IOrderPaymentViewData['payment'] {
-		return this.element.dataset.payment as IOrderPaymentViewData['payment'];
-	}
-
 	set address(value: string) {
 		this.addressInput.value = value;
-	}
-
-	get address(): string {
-		return this.addressInput.value;
 	}
 }

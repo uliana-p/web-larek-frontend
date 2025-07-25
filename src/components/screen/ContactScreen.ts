@@ -6,7 +6,7 @@ import { AppModel } from '../model/AppState';
 import { OrderContactsModalView } from '../view/order/OrderContactsModalView';
 
 export class ContactScreen extends Screen<object, IContactScreenSettings> {
-	contactsModalView: OrderContactsModalView;
+	protected contactsModalView: OrderContactsModalView;
 
 	init() {
 		super.init();
@@ -30,5 +30,9 @@ export class ContactScreen extends Screen<object, IContactScreenSettings> {
 			isDisabled: errors.some(Boolean),
 			errors,
 		});
+	}
+
+	getModalContent() {
+		return this.contactsModalView.getModalContent();
 	}
 }

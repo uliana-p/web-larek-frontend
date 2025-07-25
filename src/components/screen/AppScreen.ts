@@ -5,20 +5,18 @@ import { cloneTemplate, ensureElement } from '../../utils/utils';
 import { Screen } from '../base/Screen';
 import { AppModel } from '../model/AppState';
 import { GalleryView } from '../view/gallery/GalleryView';
-import { ProductCardView } from '../view/gallery/ProductCardView';
+import { ProductCardModalView } from '../view/gallery/ProductCardView';
 
 export class AppScreen extends Screen<object, IAppScreenSettings> {
-	declare gallery: GalleryView;
-	detailsCardView: ProductCardView;
-
-	private _selectedProductId: string | null = null;
+	protected gallery: GalleryView;
+	protected detailsCardView: ProductCardModalView;
 
 	init() {
 		this.element = ensureElement(settings.SELECTORS.PAGE);
 		this.gallery = new GalleryView(ensureElement(settings.SELECTORS.GALLERY), {
 			events: this.settings.events,
 		});
-		this.detailsCardView = new ProductCardView(
+		this.detailsCardView = new ProductCardModalView(
 			cloneTemplate(settings.TEMPLATES.CARD_PREVIEW),
 			{ events: this.settings.events }
 		);
@@ -28,18 +26,15 @@ export class AppScreen extends Screen<object, IAppScreenSettings> {
 		this.gallery.render({ products });
 	}
 
-	selectProduct(id: string) {
-		this._selectedProductId = id;
-	}
-
 	update(state: AppModel) {
 		this.gallery.render({ products: state.products });
-		const selectedProduct = state.products.find(
-			(p) => p.id === this._selectedProductId
-		);
 
-		if (selectedProduct) {
-			this.detailsCardView.render(selectedProduct);
+		if (state.selectedProduct) {
+			this.detailsCardView.render(state.selectedProduct);
 		}
+	}
+
+	getModalContent() {
+		return this.detailsCardView.getModalContent();
 	}
 }

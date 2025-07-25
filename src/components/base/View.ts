@@ -8,7 +8,7 @@ export abstract class View<T, S extends object = object>
 	// чтобы при копировании создавать дочерний класс, не зная его имени
 	['constructor']!: new (root: HTMLElement, settings: S) => this;
 
-	constructor(public element: HTMLElement, protected readonly settings: S) {
+	constructor(protected element: HTMLElement, protected readonly settings: S) {
 		this.init();
 		if (!this.element) {
 			throw new Error('Element is not defined');

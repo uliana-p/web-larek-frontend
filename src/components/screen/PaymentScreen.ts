@@ -6,7 +6,7 @@ import { AppModel } from '../model/AppState';
 import { OrderPaymentModalView } from '../view/order/OrderPaymentModalView';
 
 export class PaymentScreen extends Screen<object, IPaymentScreenSettings> {
-	paymentModalView: OrderPaymentModalView;
+	protected paymentModalView: OrderPaymentModalView;
 
 	init() {
 		super.init();
@@ -30,5 +30,9 @@ export class PaymentScreen extends Screen<object, IPaymentScreenSettings> {
 			isDisabled: errors.some(Boolean),
 			errors,
 		});
+	}
+
+	getModalContent() {
+		return this.paymentModalView.getModalContent();
 	}
 }

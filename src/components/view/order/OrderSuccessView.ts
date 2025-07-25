@@ -2,9 +2,9 @@ import {
 	IOrderSuccessViewData,
 	IOrderSuccessViewSettings,
 } from '../../../types/components/view/order/OrderSuccessView';
-import { View } from '../../base/View';
+import { BaseModalView } from '../modal/BaseModalView';
 
-export class OrderSuccessView extends View<
+export class OrderSuccessView extends BaseModalView<
 	IOrderSuccessViewData,
 	IOrderSuccessViewSettings
 > {

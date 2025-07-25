@@ -8,8 +8,8 @@ export class OrderContactsModalView extends OrderFromView<
 	IOrderContactsViewData,
 	IOrderContactsViewSettings
 > {
-	private emailInput: HTMLInputElement;
-	private phoneInput: HTMLInputElement;
+	protected emailInput: HTMLInputElement;
+	protected phoneInput: HTMLInputElement;
 
 	init() {
 		super.init();
@@ -21,11 +21,15 @@ export class OrderContactsModalView extends OrderFromView<
 			'input[name="phone"]'
 		);
 
-		this.emailInput.addEventListener('input', () => {
-			this.settings.events.emit('order:email-change', { email: this.email });
+		this.emailInput.addEventListener('input', (e) => {
+			this.settings.events.emit('order:email-change', {
+				email: (e.target as HTMLInputElement).value,
+			});
 		});
-		this.phoneInput.addEventListener('input', () => {
-			this.settings.events.emit('order:phone-change', { phone: this.phone });
+		this.phoneInput.addEventListener('input', (e) => {
+			this.settings.events.emit('order:phone-change', {
+				phone: (e.target as HTMLInputElement).value,
+			});
 		});
 	}
 
@@ -38,15 +42,7 @@ export class OrderContactsModalView extends OrderFromView<
 		this.emailInput.value = value;
 	}
 
-	get email(): string {
-		return this.emailInput.value;
-	}
-
 	set phone(value: string) {
 		this.phoneInput.value = value;
-	}
-
-	get phone(): string {
-		return this.phoneInput.value;
 	}
 }

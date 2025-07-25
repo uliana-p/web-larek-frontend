@@ -1,12 +1,13 @@
 import { IOrderForm, IPaymentType, IProduct } from '../../types';
 import { IAppState } from '../../types/components/model/AppState';
 import { IProductModel } from '../../types/components/model/ProductModel';
+import { IEvents } from '../base/events';
 
 export class AppModel implements IAppState {
-	private _products: IProduct[] = [];
-	private _basket: IProduct[] = [];
-
-	private _orderForm: IOrderForm = {
+	protected _products: IProductModel[] = [];
+	protected _basket: IProduct[] = [];
+	protected _selectedProduct: IProductModel | null = null;
+	protected _orderForm: IOrderForm = {
 		payment: null,
 		email: '',
 		address: '',
@@ -14,19 +15,34 @@ export class AppModel implements IAppState {
 		formErrors: {},
 	};
 
+	constructor(protected events: IEvents) {}
+
 	get products(): IProductModel[] {
-		return this._products.map<IProductModel>((p) => ({
-			...p,
-			isInBasket: this.isInBasket(p),
-		}));
+		return this._products;
 	}
 
 	set products(products: IProduct[]) {
-		this._products = products;
+		this._products = products.map((p) => {
+			const isInBasket = this.isInBasket(p);
+			return {
+				...p,
+				isInBasket,
+			};
+		});
+		this.events.emit('model:products-change', this);
 	}
 
 	get basket() {
 		return this._basket;
+	}
+
+	get selectedProduct() {
+		return this._selectedProduct;
+	}
+
+	selectProduct(id: string) {
+		this._selectedProduct = this.products.find((p) => p.id === id) || null;
+		this.events.emit('model:selected-product-change', this);
 	}
 
 	get orderForm() {
@@ -53,28 +69,22 @@ export class AppModel implements IAppState {
 		this.validateForm();
 	}
 
-	validateEmail() {
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	private validateEmail() {
 		this.orderForm.formErrors.email = undefined;
 		if (!this.orderForm.email) {
 			this._orderForm.formErrors.email = 'Нужно ввести email';
-		} else if (!emailRegex.test(this._orderForm.email)) {
-			this._orderForm.formErrors.email = 'Некорректный email';
 		}
 	}
 
-	validatePhone() {
+	private validatePhone() {
 		this.orderForm.formErrors.phone = undefined;
 
-		const phoneRegex = /^\+7\d{10}$/;
 		if (!this.orderForm.phone) {
 			this._orderForm.formErrors.phone = 'Нужно ввести телефон';
-		} else if (!phoneRegex.test(this._orderForm.phone.replace(/\s/g, ''))) {
-			this._orderForm.formErrors.phone = 'Некорректный телефон';
 		}
 	}
 
-	validateAddress() {
+	private validateAddress() {
 		this.orderForm.formErrors.address = undefined;
 
 		if (!this.orderForm.address) {
@@ -82,7 +92,7 @@ export class AppModel implements IAppState {
 		}
 	}
 
-	validatePayment() {
+	private validatePayment() {
 		this.orderForm.formErrors.payment = undefined;
 
 		if (!this.orderForm.payment) {
@@ -90,23 +100,16 @@ export class AppModel implements IAppState {
 		}
 	}
 
-	validateForm() {
+	private validateForm() {
 		this.validateEmail();
 		this.validatePhone();
 		this.validateAddress();
 		this.validatePayment();
+		this.events.emit('model:order-form-change', this);
 	}
 
-	addToBasket(product: IProduct) {
-		this._basket.push(product);
-	}
-
-	isInBasket(product: IProduct) {
+	private isInBasket(product: IProduct) {
 		return this._basket.some((p) => p.id === product.id);
-	}
-
-	removeFromBasket(product: IProduct) {
-		this._basket = this._basket.filter((p) => p.id !== product.id);
 	}
 
 	resetOrderForm() {
@@ -117,9 +120,30 @@ export class AppModel implements IAppState {
 			phone: '',
 			formErrors: {},
 		};
+		this.validateForm();
 	}
 
 	clearBasket() {
 		this._basket = [];
+		this.events.emit('model:basket-change', this);
+	}
+
+	toggleProductInBasket(id: string) {
+		const product = this.products.find((p) => p.id === id);
+		if (!product) return;
+
+		if (this.isInBasket(product)) {
+			this._basket = this._basket.filter((p) => p.id !== product.id);
+		} else {
+			this._basket.push(product);
+		}
+
+		this.products.forEach((p) => {
+			if (p.id === id) {
+				p.isInBasket = !p.isInBasket;
+			}
+		});
+
+		this.events.emit('model:basket-change', this);
 	}
 }

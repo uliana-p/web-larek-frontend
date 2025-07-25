@@ -1,6 +1,9 @@
-import { View } from '../../base/View';
+import { BaseModalView } from '../modal/BaseModalView';
 
-export class OrderFromView<T, S extends object = object> extends View<T, S> {
+export abstract class OrderFromView<
+	T,
+	S extends object = object
+> extends BaseModalView<T, S> {
 	protected submitButton: HTMLButtonElement;
 	protected errorsElement: HTMLElement;
 
@@ -22,17 +25,7 @@ export class OrderFromView<T, S extends object = object> extends View<T, S> {
 		this.submitButton.disabled = value;
 	}
 
-	get isDisabled(): boolean {
-		return this.submitButton.disabled;
-	}
-
 	set errors(value: string[] | undefined) {
 		this.errorsElement.innerHTML = value?.at(0) ?? '';
-	}
-
-	get errors(): string[] | undefined {
-		return this.errorsElement.innerText
-			? [this.errorsElement.innerText]
-			: undefined;
 	}
 }

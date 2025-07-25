@@ -3,7 +3,7 @@ import { AppModel } from './components/model/AppState';
 import './scss/styles.scss';
 import { LarekApi } from './components/model/LarekApi';
 import { API_URL, CDN_URL, settings } from './utils/constants';
-import { ModalView } from './components/view/ModalView';
+import { ModalContainerView } from './components/view/modal/ModalContainerView';
 import { AppScreen } from './components/screen/AppScreen';
 import { ensureElement } from './utils/utils';
 import { BasketScreen } from './components/screen/BasketScreen';
@@ -13,7 +13,7 @@ import { IPaymentType } from './types';
 import { OrderSuccessScreen } from './components/screen/OrderSuccessScreen';
 
 const events = new EventEmitter();
-const state = new AppModel();
+const state = new AppModel(events);
 const api = new LarekApi(CDN_URL, API_URL);
 
 const appScreen = new AppScreen({ events });
@@ -22,70 +22,55 @@ const contactScreen = new ContactScreen({ events });
 const paymentScreen = new PaymentScreen({ events });
 const successScreen = new OrderSuccessScreen({ events });
 
-const modal = new ModalView(ensureElement(settings.SELECTORS.MODAL), {
-	events,
-});
+const modalContainerView = new ModalContainerView(
+	ensureElement(settings.SELECTORS.MODAL),
+	{ events }
+);
 
-api.getProducts().then((products) => {
-	state.products = products;
-	appScreen.update(state);
-});
+api
+	.getProducts()
+	.then((products) => {
+		state.products = products;
+	})
+	.catch((error) => {
+		console.error(error);
+	});
 
 events.on('basket:open', () => {
-	basketScreen.update(state);
-
-	modal.content = basketScreen.basketModalView.element;
-	modal.open();
+	modalContainerView.content = basketScreen.getModalContent();
+	modalContainerView.open();
 });
 
 events.on<{ id: string }>('product:show-details', ({ id }) => {
-	appScreen.selectProduct(id);
-	appScreen.update(state);
+	state.selectProduct(id);
 
-	modal.content = appScreen.detailsCardView.element;
-	modal.open();
+	modalContainerView.content = appScreen.getModalContent();
+	modalContainerView.open();
 });
 
-events.on<{ id: string }>('basket:add', ({ id }) => {
-	const product = state.products.find((p) => p.id === id);
-	if (!product) return;
-
-	state.addToBasket(product);
-
-	appScreen.update(state);
-	basketScreen.update(state);
-});
-
-events.on<{ id: string }>('basket:remove', ({ id }) => {
-	const product = state.products.find((p) => p.id === id);
-	if (!product) return;
-
-	state.removeFromBasket(product);
-
-	appScreen.update(state);
-	basketScreen.update(state);
+events.on<{ id: string }>('basket:change', ({ id }) => {
+	state.toggleProductInBasket(id);
 });
 
 events.on('order:payment', () => {
 	state.resetOrderForm();
-	paymentScreen.update(state);
 
-	modal.content = paymentScreen.paymentModalView.element;
-	modal.open();
+	modalContainerView.content = paymentScreen.getModalContent();
+	modalContainerView.open();
 });
 
 events.on('order:contacts', () => {
-	modal.content = contactScreen.contactsModalView.element;
-	modal.open();
+	modalContainerView.content = contactScreen.getModalContent();
+	modalContainerView.open();
 });
 
 events.on('order:success', () => {
-	modal.content = successScreen.successModalView.element;
-	modal.open();
+	modalContainerView.content = successScreen.getModalContent();
+	modalContainerView.open();
 });
 
 events.on('order:success-close', () => {
-	modal.close();
+	modalContainerView.close();
 });
 
 events.on('order:submit', () => {
@@ -99,37 +84,59 @@ events.on('order:submit', () => {
 			items: state.basket.map((item) => item.id),
 		})
 		.then((order) => {
-			modal.content = successScreen.successModalView.element;
 			successScreen.update({ total: order.total });
-			modal.open();
+
+			modalContainerView.content = successScreen.getModalContent();
+			modalContainerView.open();
 		})
 		.catch((error) => {
 			console.error(error);
-			modal.close();
+			modalContainerView.close();
 		})
 		.finally(() => {
 			state.clearBasket();
-			appScreen.update(state);
-			basketScreen.update(state);
 		});
 });
 
 events.on<{ payment: IPaymentType }>('order:payment-change', ({ payment }) => {
 	state.setPayment(payment);
-	paymentScreen.update(state);
 });
 
 events.on<{ address: string }>('order:address-change', ({ address }) => {
 	state.setAddress(address);
-	paymentScreen.update(state);
 });
 
 events.on<{ email: string }>('order:email-change', ({ email }) => {
 	state.setEmail(email);
-	contactScreen.update(state);
 });
 
 events.on<{ phone: string }>('order:phone-change', ({ phone }) => {
 	state.setPhone(phone);
+});
+
+events.on<AppModel>('model:order-form-change', (state) => {
+	paymentScreen.update(state);
+});
+
+events.on<AppModel>('model:products-change', (state) => {
+	appScreen.update(state);
+	basketScreen.update(state);
+});
+
+events.on<AppModel>('model:basket-change', (state) => {
+	appScreen.update(state);
+	basketScreen.update(state);
+});
+
+events.on<AppModel>('model:order-form-change', (state) => {
+	paymentScreen.update(state);
+});
+
+events.on<AppModel>('model:order-form-change', (state) => {
 	contactScreen.update(state);
+	paymentScreen.update(state);
+});
+
+events.on<AppModel>('model:selected-product-change', (state) => {
+	appScreen.update(state);
 });

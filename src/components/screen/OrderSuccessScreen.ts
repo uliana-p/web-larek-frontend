@@ -9,7 +9,7 @@ export class OrderSuccessScreen extends Screen<
 	object,
 	IOrderSuccessScreenSettings
 > {
-	successModalView: OrderSuccessView;
+	protected successModalView: OrderSuccessView;
 
 	init() {
 		this.element = ensureElement(settings.SELECTORS.PAGE);
@@ -23,5 +23,9 @@ export class OrderSuccessScreen extends Screen<
 
 	update(data: IOrderSuccessViewData) {
 		this.successModalView.render(data);
+	}
+
+	getModalContent() {
+		return this.successModalView.getModalContent();
 	}
 }

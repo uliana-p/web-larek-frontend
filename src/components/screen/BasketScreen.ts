@@ -7,8 +7,8 @@ import { BasketButtonView } from '../view/basket/BasketButtonView';
 import { BasketModalView } from '../view/basket/BasketModalView';
 
 export class BasketScreen extends Screen<object, IBasketScreenSettings> {
-	private basketButton: BasketButtonView;
-	basketModalView: BasketModalView;
+	protected basketButton: BasketButtonView;
+	protected basketModalView: BasketModalView;
 
 	init() {
 		this.element = ensureElement(settings.SELECTORS.PAGE);
@@ -24,11 +24,16 @@ export class BasketScreen extends Screen<object, IBasketScreenSettings> {
 		);
 	}
 
+	getModalContent() {
+		return this.basketModalView.getModalContent();
+	}
+
 	update(state: AppModel) {
 		this.basketButton.render({ counter: state.basket.length });
 		this.basketModalView.render({
 			products: state.basket,
 			isDisabled: state.basket.length === 0,
+			price: state.basket.reduce((acc, product) => acc + product.price, 0),
 		});
 	}
 }

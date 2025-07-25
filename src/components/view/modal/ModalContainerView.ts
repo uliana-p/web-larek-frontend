@@ -1,11 +1,11 @@
-import { ensureElement } from '../../utils/utils';
-import { View } from '../base/View';
+import { ensureElement } from '../../../utils/utils';
+import { View } from '../../base/View';
 
-export class ModalView extends View<object, object> {
-	private container: HTMLElement;
-	private closeButton: HTMLButtonElement;
-	private contentElement: HTMLElement;
-	private pageWrapper: HTMLElement;
+export class ModalContainerView extends View<object, object> {
+	protected container: HTMLElement;
+	protected closeButton: HTMLButtonElement;
+	protected contentElement: HTMLElement;
+	protected pageWrapper: HTMLElement;
 
 	init() {
 		this.container = this.ensureElement<HTMLElement>('.modal__container');
