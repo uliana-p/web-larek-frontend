@@ -62,8 +62,6 @@ export class ProductCardModalView extends BaseModalView<
 	}
 
 	set price(value: number | null) {
-		this.element.dataset.price = String(value);
-
 		if (value === null) {
 			this.priceEl.textContent = 'Бесценно';
 			if (this.cardButton) {

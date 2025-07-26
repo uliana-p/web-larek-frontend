@@ -49,7 +49,6 @@ export class OrderPaymentModalView extends OrderFromView<
 		this.paymentButtons.forEach((btn) => {
 			btn.classList.toggle('button_alt-active', btn.name === value);
 		});
-		this.element.dataset.payment = value;
 	}
 
 	set address(value: string) {

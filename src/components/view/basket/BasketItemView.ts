@@ -41,7 +41,6 @@ export class BasketItemView extends View<
 	}
 
 	set price(value: number | null) {
-		this.element.dataset.price = String(value);
 		if (value === null) {
 			return;
 		}

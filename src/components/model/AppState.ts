@@ -4,9 +4,9 @@ import { IProductModel } from '../../types/components/model/ProductModel';
 import { IEvents } from '../base/events';
 
 export class AppModel implements IAppState {
-	protected _products: IProductModel[] = [];
+	protected _products: IProduct[] = [];
 	protected _basket: IProduct[] = [];
-	protected _selectedProduct: IProductModel | null = null;
+	protected _selectedProductId: string | null = null;
 	protected _orderForm: IOrderForm = {
 		payment: null,
 		email: '',
@@ -18,17 +18,16 @@ export class AppModel implements IAppState {
 	constructor(protected events: IEvents) {}
 
 	get products(): IProductModel[] {
-		return this._products;
+		return this._products.map((p) => {
+			return {
+				...p,
+				isInBasket: this.isInBasket(p),
+			};
+		});
 	}
 
 	set products(products: IProduct[]) {
-		this._products = products.map((p) => {
-			const isInBasket = this.isInBasket(p);
-			return {
-				...p,
-				isInBasket,
-			};
-		});
+		this._products = products;
 		this.events.emit('model:products-change', this);
 	}
 
@@ -37,11 +36,12 @@ export class AppModel implements IAppState {
 	}
 
 	get selectedProduct() {
-		return this._selectedProduct;
+		return this.products.find((p) => p.id === this._selectedProductId) || null;
 	}
 
 	selectProduct(id: string) {
-		this._selectedProduct = this.products.find((p) => p.id === id) || null;
+		this._selectedProductId =
+			this.products.find((p) => p.id === id)?.id || null;
 		this.events.emit('model:selected-product-change', this);
 	}
 
@@ -137,12 +137,6 @@ export class AppModel implements IAppState {
 		} else {
 			this._basket.push(product);
 		}
-
-		this.products.forEach((p) => {
-			if (p.id === id) {
-				p.isInBasket = !p.isInBasket;
-			}
-		});
 
 		this.events.emit('model:basket-change', this);
 	}
